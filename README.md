@@ -122,14 +122,41 @@ $ npm --version
 ```
 ### Step 4: clone and install
 
-First, clone this repo and set it up to start on boot
+First, clone this repo and set it up to start on boot. Also we have a 
+service that clears out previous wifi connection information at boot.
+As such everytime you reboot the pi you need to connect to the web 
+service and configure your wifi access.
 ```
 $ git clone https://github.com/0n3man/wifi2wifi
 $ cd wifi2wifi
 $ sudo cp config/wifi-setup.service /lib/systemd/system
 $ sudo vi /lib/systemd/system/wifi-setup.service # edit paths as needed
 $ sudo systemctl enable wifi-setup
+$ sudo cp net-configs/clear_wpa_config.service /lib/systemd/system
+$ sudo vi /lib/systemd/system/clear_wpa_config.service # edit paths as needed
+$ sudo systemctl enable clear_wpa_config.service
 ```
+Once we've connected to a wifi service we'll need to to have iptables masquade.
+Addthese lines to the end of the /etc/rc.local file just before the exit 0 line:
+```
+iptables -t nat -A  POSTROUTING -o eth0 -j MASQUERADE
+iptables -t nat -A  POSTROUTING -o wlan0 -j MASQUERADE
+iptables -t nat -A  POSTROUTING -o tun0 -j MASQUERADE
+```
+Before we reboot we can test that the web server will come up.  If the netstat 
+command provides output you have a web server listening on port 80. 
+```
+$ sudo systemctl daemon-reload
+$ sudo systemctl start wifi-setup
+$ sudo netstat -lntp | grep ":80"
+```
+At this point you could use your phone to access the webserver at https://172.16.33.1/
+and configure the wifi internet connectivity.
+
+### Step 5: Add in openvpn
+
+
+
 
 
 
