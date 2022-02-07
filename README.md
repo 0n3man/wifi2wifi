@@ -175,6 +175,25 @@ The light will be on solid if the web server is up and running.  It will flash w
 wifi interent service is being conigured.  Once the box can ping 8.8.8.8, meaning you have internet
 access, the light will stop flashing.  
 
+### Step 6 alternative: You can use a 16x2 LCD to provide satus info
+I used this display:
+```
+https://www.amazon.com/JANSANE-Arduino-Display-Interface-Raspberry/dp/B07D83DY17/ref=cm_cr_arp_d_product_top?ie=UTF8
+```
+You need to connect the 4 wires to ground, 5v, SDL, and SDC. 
+
+In your rc.local file you would want this instead of the line mention in the first option for step 6:
+```
+/home/pi/wifi2wifi/gpio_display_status.py > /dev/null&
+```
+Then in the wifi2wifi directory run the following command to configure communications with the LCD:
+```
+sudo ./install_lcd.sh
+```
+The system reboots after the install.
+Note: the displays I got turned on but I didn't get any text.  On the back is a pod that you can adjust
+the brightness of the chracters.  If the light is on try adjusting the screw in this pod until you can
+see some darkness where each character will appear.
 
 ### Step 5: Add in openvpn connection to access your own content
 You need to generate a openvpn configuration on your openvpn server.  Then you put the .key and .p12
