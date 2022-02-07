@@ -143,6 +143,15 @@ iptables -t nat -A  POSTROUTING -o eth0 -j MASQUERADE
 iptables -t nat -A  POSTROUTING -o wlan0 -j MASQUERADE
 iptables -t nat -A  POSTROUTING -o tun0 -j MASQUERADE
 ```
+We also need to enable nic to nic routing so edit the file /etc/sysctrl.conf
+and uncomment this line by removing the # in front of it.
+```
+net.ipv4.ip_forward=1
+```
+You can reload this setting via:
+```
+$ sudo sysctl --system
+```
 Before we reboot we can test that the web server will come up.  If the netstat 
 command provides output you have a web server listening on port 80. 
 ```
@@ -155,7 +164,7 @@ and configure the wifi internet connectivity.
 
 ### Step 5: Add in openvpn
 
-
+!!!!
 
 
 
