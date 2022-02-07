@@ -85,7 +85,7 @@ ieee80211n=1
 # QoS support required for full speed
 wmm_enabled=1
 # set up secure wifi access point
-ssid=fire_wifi
+ssid=wifi_setup
 # 1=wpa, 2=wep, 3=both
 auth_algs=1
 wpa=2
