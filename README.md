@@ -1,6 +1,8 @@
 # wifi 2 wifi router with openvpn client connectivity
 
-This repo is based on https://github.com/davidflanagan/wifi-setup. With
+The bulk of this effort is based on https://github.com/davidflanagan/wifi-setup.
+I also used https://github.com/the-raspberry-pi-guy/lcd, which I've included here,
+to enable status reporting on an LCD screen. With
 slight modification to David's code base. I set up a wifi 2 wifi router
 with an openvpn client connection to provide access to media stored at my
 house.  This give me the ability to use a firestick configured to access my
