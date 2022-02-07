@@ -162,71 +162,58 @@ $ sudo netstat -lntp | grep ":80"
 At this point you could use your phone to access the webserver at https://172.16.33.1/
 and configure the wifi internet connectivity.
 
-### Step 5: Add in openvpn
-
-!!!!
-
-
 ### Step 6: Add the flashing light to show progress
-
-!!!
-
-
-### below is just old stuff
-
-
-### Step 3: set up the other services you want your device to run
-
-Once the wifi-setup server has connected to wifi, it will exit. But if
-you want, it can run a command to make your device start doing
-whatever it is your device does. If you want to use this feature, edit
-`platforms/default.js` to define the `nextStageCommand` property.
-
-### Step 4: run the server
-
-If you have a keyboard and monitor hooked up to your device, or have a
-serial connection to the device, then you can try out the server at
-this point:
-
+I connected an led to pins 6 and 8. Depending on your led you might need a resister, but
+mine seems to work just fine.  I add the following line to the end of /etc/rc.local just
+before the exit 0
 ```
-sudo node index.js
+/home/pi/wifi2wifi/net-configs/gpio_status.py > /dev/null&
 ```
+The light will be on solid if the web server is up and running.  It will flash while the
+wifi interent service is being conigured.  Once the box can ping 8.8.8.8 it will stop flashing.
 
-If you want to run the server on a device that has no network
-connection and no keyboard or monitor, you probably want to set it up
-to run automatically when the device boots up. To do this, copy
-`config/wifi-setup.service` to `/lib/systemd/system`, edit it to set
-the correct paths for node and for the server code, and then enable
-the service with systemd:
 
+### Step 5: Add in openvpn
+You need to generate a openvpn configuration on your openvpn server.  Then you put the .key and .p12
+files in /etc/openvpn/client directory.  You then place your openvpn configuration file in the
+/etc/openvpn directory and make sure the name ends with ".conf".  So my /etc/openvpn/tv_client.conf 
+file looks like this:
 ```
-$ sudo cp config/wifi-setup.service /lib/systemd/system
-$ sudo vi /lib/systemd/system/wifi-setup.service # edit paths as needed
-$ sudo systemctl enable wifi-setup
+dev tun
+persist-tun
+persist-key
+cipher AES-128-CBC
+auth SHA1
+client
+resolv-retry infinite
+remote MYDOMAIN.com 21949 udp
+lport 0
+verify-x509-name "C=US, ST=MYSTATE, L=MYCITY, O=home, emailAddress=WHATEVE@gmail.com, CN=VPNCert" subject
+remote-cert-tls server
+pkcs12 /etc/openvpn/client/Moms_VPN_access_tv_access.p12
+tls-auth /etc/openvpn/client/Moms_VPN_access_tv_access-tls.key 1
+float
 ```
+The float line at the end is probably not reequired in most cases.  I included because I was having
+some problems related to my test router  natting the openvpn return traffic.  So responses for openvpn
+were coming from the wrong IP address.  
 
-At this point, the server will run each time you reboot.  If you want
-to run it manually without rebooting, do this:
-
+The last thing to do is to set the vpn to start in /etc/defaults/openvpn.  You need to add the line:
 ```
-$ sudo systemctl start wifi-setup
+AUTOSTART="tv_client"
 ```
+The name here tv_client matches the name of the file we just created in /etc/openvpn.
 
-Any output from the server is sent to the systemd journal, and you can
-review it with:
-
+With the above in place you can restart openvpn
 ```
-$ sudo journalctl -u wifi-setup
+systemctl daemon-reload
+systemctl restart openvpn
 ```
+if all goes well with the vpn connection you should have a tun0 interface giving you access to whatever is
+at the other end of the tunnel.
 
-Add the -b option to the line above if you just want to view output
-from the current boot.  Add -f if you want to watch the output live as
-you interact with the server.
 
-If you want these journals to persist across reboots (you probably do)
-then ensure that the `/var/log/journal/` directory
-exists:
 
-```
-$ sudo mkdir /var/log/journal
-```
+
+
+
