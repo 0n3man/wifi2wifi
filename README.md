@@ -11,29 +11,28 @@ wifi connective to a local network.  As I already have an access point I don't
 need the access point part of the original capability.  However I still need a way to get
 the second interface connected to the local network.  David's code provides a
 web server and wifi configuration commands that enable configuring the second 
-interface.
+interface. This is how it works:
 
-- the device is not on the local wifi network when it is first
-  turned on, however it will be broadcasting its own wifi access point pm the
-  second interface, which can be used to access the web server on the pi. 
+- The wifi2wifi pi is not connected to the local wifi network when it is first
+  turned on. It starts by broadcasting its own wifi access point on the
+  second wireles interface. This acccess point is used to access the web server on the pi. 
   The user connects their phone or laptop to the fire_tv_access access point 
-  and thens useing a web browser (not a native app!) to access
-  the device at the URL 172.16.33.1 or `<hostname>.local`. The
-  user can select then their desired wifi network and enter the password
-  on a web page and transfer it to the web server running on the
-  device. At this point the device connects the second wifi interface
-  to the internet using the credentials the user provided.
+  and thens using a web browser (not a native app!) to access
+  the device at the URL http://172.16.33.1/. The
+  user can select their desired wifi network for internet access and enter the password
+  on a web page.  The entered response is then used to configred the second wifi interface
+  to give internet access.
 
-The code is Linux-specific, depends on systemd, and has so far only
-been tested on a Raspberry Pi 3. The projects needs hostapd, dhcpcd,
-dnsmasq and openvpn to work. You start by loading the raspberry pi
-operating system.  To get to the command line you can either use the
-console or ssh.  If you plan to use ssh remember to put a file named
-ssh in the /boot partition of the micro sd prior to booting your pi.
+The code is Linux-specific, depends on systemd, and has only
+been tested on a Raspberry Pi 3+. That said it should also work on other version of pi hardware.
+I suspect it would also run on other arm based boards.  The only requirement is that the linux 
+distribution uses hostapd, dhcpcd, dnsmasq and openvpn to work. You start by loading the raspberry pi
+operating system.  You need command line access either vai a console or ssh.  If you plan to 
+use ssh remember to put a file named ssh in the /boot partition of the micro sd prior to booting your pi.
 You should do the normal pi configuration to set the timezone and keyboard.
 Do not configure wifi.
 
-For this build I used a cudy wifi adaptor available here:
+For this build I used the internal pi wifi and a cudy wifi adaptor available here:
 ```
 https://www.amazon.com/gp/product/B084FS7BWF/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1
 ```
@@ -48,6 +47,7 @@ $ sudo apt autoremove
 $ shutdown -r now
 ```
 ### Step 2: If you're using a realtek adaptor for your second wifi device
+The cudy adaptor is based on realtek which isn't included in the base raspberry os install.
 Install the realtek driver
 
 ```
@@ -64,7 +64,7 @@ interface=wlan1
 dhcp-range=172.16.33.100,172.16.33.150,255.255.255.0,24h
 server=8.8.8.8
 ```
-Add these lines to /ect/dhcpcd.conf
+Add these lines to /ect/dhcpcd.conf:
 ```
 interface wlan1
     static ip_address=172.16.33.1/24
@@ -95,8 +95,10 @@ wpa_pairwise=TKIP CCMP
 rsn_pairwise=CCMP
 ```
 In the above you need to change YOUR_PASS_CODE to whatever you want
-the user to enter for the wifi password.  
-Enable the access point software and then reboot the sytem to verify
+the user to enter for the wifi password.  You may need to change
+your country and channel depending on where you're running your pi.
+The above build a 5GHz network on channel 149 as it's seems to see little
+use in the US.  Enable the access point software and then reboot the sytem to verify
 your access point came up.
 
 ```
@@ -137,7 +139,7 @@ $ sudo vi /lib/systemd/system/clear_wpa_config.service # edit paths as needed
 $ sudo systemctl enable clear_wpa_config.service
 ```
 Once we've connected to a wifi service we'll need to to have iptables masquade.
-Addthese lines to the end of the /etc/rc.local file just before the exit 0 line:
+Add these lines to the end of the /etc/rc.local file just before the exit 0 line:
 ```
 iptables -t nat -A  POSTROUTING -o eth0 -j MASQUERADE
 iptables -t nat -A  POSTROUTING -o wlan0 -j MASQUERADE
@@ -153,7 +155,7 @@ You can reload this setting via:
 $ sudo sysctl --system
 ```
 Before we reboot we can test that the web server will come up.  If the netstat 
-command provides output you have a web server listening on port 80. 
+command below provides output you have a web server listening on port 80. 
 ```
 $ sudo systemctl daemon-reload
 $ sudo systemctl start wifi-setup
@@ -162,18 +164,19 @@ $ sudo netstat -lntp | grep ":80"
 At this point you could use your phone to access the webserver at https://172.16.33.1/
 and configure the wifi internet connectivity.
 
-### Step 6: Add the flashing light to show progress
+### Step 6: Add a flashing light to show progress
 I connected an led to pins 6 and 8. Depending on your led you might need a resister, but
-mine seems to work just fine.  I add the following line to the end of /etc/rc.local just
+the one I used seems to work just fine.  I add the following line to the end of /etc/rc.local just
 before the exit 0
 ```
 /home/pi/wifi2wifi/net-configs/gpio_status.py > /dev/null&
 ```
 The light will be on solid if the web server is up and running.  It will flash while the
-wifi interent service is being conigured.  Once the box can ping 8.8.8.8 it will stop flashing.
+wifi interent service is being conigured.  Once the box can ping 8.8.8.8, meaning you have internet
+access, the light will stop flashing.  
 
 
-### Step 5: Add in openvpn
+### Step 5: Add in openvpn connection to access your own content
 You need to generate a openvpn configuration on your openvpn server.  Then you put the .key and .p12
 files in /etc/openvpn/client directory.  You then place your openvpn configuration file in the
 /etc/openvpn directory and make sure the name ends with ".conf".  So my /etc/openvpn/tv_client.conf 
@@ -195,10 +198,10 @@ tls-auth /etc/openvpn/client/Moms_VPN_access_tv_access-tls.key 1
 float
 ```
 The float line at the end is probably not reequired in most cases.  I included because I was having
-some problems related to my test router  natting the openvpn return traffic.  So responses for openvpn
-were coming from the wrong IP address.  
+a problems where my test router NATs the openvpn return traffic.  So responses for openvpn
+were coming from the wrong IP address. The float line tells openvpn to access these responses.  
 
-The last thing to do is to set the vpn to start in /etc/defaults/openvpn.  You need to add the line:
+The last thing to do is to set the vpn to start by editing /etc/defaults/openvpn.  You need to add the line:
 ```
 AUTOSTART="tv_client"
 ```
