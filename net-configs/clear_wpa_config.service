@@ -2,7 +2,7 @@
 Description=ClearWpaConfig
 Before=network.target
 [Service]
-ExecStart=/bin/bash /home/pi/clear_wpa_config
+ExecStart=/bin/bash /home/pi/wifi2wifi/net-configs/clear_wpa_config
 User=pi
 [Install]
 WantedBy=multi-user.target
