@@ -9,69 +9,133 @@ access media stored at my house.  David's project brings up a wireless
 access point and then allows you to configure that interface to provide
 wifi connective to a local network.  As I already have an access point I don't 
 need that part of the original capability.  However I still need a way to get
-the second interface connected to the local network.  David's code provides the
+the second interface connected to the local network.  David's code provides a
 web server and wifi configuration commands that enable configuring the second 
 interface.
 
-- since the device is not on the local wifi network when it is first
-  turned on, the device broadcasts its own wifi access point and runs
-  the server on that. The user then connects their phone or laptop to
-  that wifi network and uses a web browser (not a native app!) to
-  connect to the device at the URL 172.16.33.1 or `<hostname>.local`. The
-  user can select then their home wifi network and enter the password
+- the device is not on the local wifi network when it is first
+  turned on, however it will be broadcasting its own wifi access point pm the
+  second interface, which can be used to access the web server on the pi. 
+  The user connects their phone or laptop to the fire_tv_access access point 
+  and thens useing a web browser (not a native app!) to access
+  the device at the URL 172.16.33.1 or `<hostname>.local`. The
+  user can select then their desired wifi network and enter the password
   on a web page and transfer it to the web server running on the
   device. At this point the device connects the second wifi interface
   to the internet using the credentials the user provided.
 
 The code is Linux-specific, depends on systemd, and has so far only
-been tested on a Raspberry Pi 3. The complete package hostapd, dhcpcd,
-dnsmasq and openvpn to be installed and properly configured. wlan1 must be
-configured as a wifi access point.  
+been tested on a Raspberry Pi 3. The projects needs hostapd, dhcpcd,
+dnsmasq and openvpn to work. You start by loading the raspberry pi
+operating system.  To get to the command line you can either use the
+console or ssh.  If you plan to use ssh remember to put a file named
+ssh in the /boot partition of the micro sd prior to booting your pi.
+You should do the normal pi configuration to set the timezone and keyboard.
+Do not configure wifi.
 
+For this build I used a cudy wifi adaptor available here:
+```
+https://www.amazon.com/gp/product/B084FS7BWF/ref=ppx_yo_dt_b_asin_title_o01_s00?ie=UTF8&psc=1
+```
 Here are the steps I followed toconfigure and run this server.
 
-### Step 0: clone and install
+### Step 1: Load the needed packages
+```
+$ sudo apt update
+$ sudo apt upgrade
+$ sudo apt install hostapd dnsmasq openvpn dkms
+$ sudo apt autoremove
+$ shutdown -r now
+```
+### Step 2: If you're using a realtek adaptor for your second wifi device
+Install the realtek driver
 
-First, clone this repo and download its dependencies from npm:
+```
+$ sudo bash
+# git clone "https://github.com/RinCat/RTL88x2BU-Linux-Driver.git" /usr/src/rtl88x2bu-git
+# sed -i 's/PACKAGE_VERSION="@PKGVER@"/PACKAGE_VERSION="git"/g' /usr/src/rtl88x2bu-git/dkms.conf
+# dkms add -m rtl88x2bu -v git
+# dkms autoinstall
+```
+### Step 3: Enable the wifi access point on wlan0
+Add the following lines to the bottom of the /etc/dnsmasq.conf file:
+```
+interface=wlan1
+dhcp-range=172.16.33.100,172.16.33.150,255.255.255.0,24h
+server=8.8.8.8
+```
+Add these lines to /ect/dhcpcd.conf
+```
+interface wlan1
+    static ip_address=172.16.33.1/24
+    nohook wpa_supplicant
+```
+Create the file /etc/hostapd/hostapd.conf with these lines
+```
+country_code=US
+interface=wlan1
+# create 5GHz access point
+hw_mode=a
+channel=149
+# limit the frequencies used to those allowed in the country
+#ieee80211d=1
+# 802.11ac and 802.11n support
+ieee80211ac=1
+ieee80211n=1
+# QoS support required for full speed
+wmm_enabled=1
+# set up secure wifi access point
+ssid=fire_tv_access
+# 1=wpa, 2=wep, 3=both
+auth_algs=1
+wpa=2
+wpa_passphrase=YOUR_PASS_CODE
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP CCMP
+rsn_pairwise=CCMP
+```
+In the above you need to change YOUR_PASS_CODE to whatever you want
+the user to enter for the wifi password.  
+Enable the access point software and then reboot the sytem to verify
+your access point came up.
 
+```
+$ sudo systemctl unmask hostapd
+$ sudo shutdown -r now
+```
+Use your phone or laptop to verify you can access the fire_tv_access 
+wifi network. This is not a fully functional network at this point so if 
+you have an android phone you'll have to tell it to connect, even though
+the network can't provide internet access.  I don't have an apple phone
+so I'm not sure how that interaction would go.
+
+### Step 3: Install node js
+This project uses node js for the web server and wifi configuration
+server.  Use the following commands to install it:
+```
+$ sudo bash
+# curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
+# apt install nodejs
+# exit
+$ node --version
+$ npm --version
+```
+### Step 4: clone and install
+
+First, clone this repo and set it up to start on boot
 ```
 $ git clone https://github.com/0n3man/wifi2wifi
 $ cd wifi2wifi
-$ !!!! node install instructions
+$ sudo cp config/wifi-setup.service /lib/systemd/system
+$ sudo vi /lib/systemd/system/wifi-setup.service # edit paths as needed
+$ sudo systemctl enable wifi-setup
 ```
 
-### Step 1: install needed networking package
 
-Install software we need to host an access point. For Raspberry
-Pi, we need to do:
 
-```
-$ sudo apt-get install hostapd
-$ sudo apt-get install dnsmasq
-$ sudo apt-get install openvpn
-```
 
-### Need to update everything after here
-### Step 2: configuration files
-Next, configure the software:
+### below is just old stuff
 
-- Edit /etc/default/hostapd to add the line:
-
-```
-DAEMON_CONF="/etc/hostapd/hostapd.conf"
-```
-
-- Copy `config/hostapd.conf` to `/etc/hostapd/hostapd.conf`.  This
-  config file defines the access point name "Wifi Setup". Edit it if
-  you want to use a more descriptive name for your device.
-
-- Edit the file `/etc/default/udhcpd` and comment out the line:
-
-```
-DHCPD_ENABLED="no"
-```
-
-- Copy `config/udhcpd.conf` to `/etc/udhcp.conf`.
 
 ### Step 3: set up the other services you want your device to run
 
