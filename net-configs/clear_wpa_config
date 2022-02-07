@@ -1,0 +1,2 @@
+#! /bin/bash
+sudo cp -p /home/pi/wpa_supplicant.conf /etc/wpa_supplicant/

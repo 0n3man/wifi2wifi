@@ -1,0 +1,8 @@
+[Unit]
+Description=ClearWpaConfig
+Before=network.target
+[Service]
+ExecStart=/bin/bash /home/pi/clear_wpa_config
+User=pi
+[Install]
+WantedBy=multi-user.target

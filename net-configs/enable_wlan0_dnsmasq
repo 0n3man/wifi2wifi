@@ -1,0 +1,3 @@
+#! /bin/bash
+cp /home/pi/wlan0.conf /etc/dnsmasq.d/wlan0.conf
+systemctl restart dnsmasq
