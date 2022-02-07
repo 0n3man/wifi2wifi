@@ -164,7 +164,7 @@ $ sudo netstat -lntp | grep ":80"
 At this point you could use your phone to access the webserver at https://172.16.33.1/
 and configure the wifi internet connectivity.
 
-### Step 6: Add a flashing light to show progress
+### Step 5: Add a flashing light to show progress
 I connected an led to pins 6 and 8. Depending on your led you might need a resister, but
 the one I used seems to work just fine.  I add the following line to the end of /etc/rc.local just
 before the exit 0
@@ -175,14 +175,14 @@ The light will be on solid if the web server is up and running.  It will flash w
 wifi interent service is being conigured.  Once the box can ping 8.8.8.8, meaning you have internet
 access, the light will stop flashing.  
 
-### Step 6 alternative: You can use a 16x2 LCD to provide satus info
+### Step 5 alternative: You can use a 16x2 LCD to provide satus info
 I used this display:
 ```
 https://www.amazon.com/JANSANE-Arduino-Display-Interface-Raspberry/dp/B07D83DY17/ref=cm_cr_arp_d_product_top?ie=UTF8
 ```
 You need to connect the 4 wires to ground, 5v, SDL, and SDC. 
 
-In your rc.local file you would want this instead of the line mention in the first option for step 6:
+In your rc.local file you would want this instead of the line mention in the first option for step 5:
 ```
 /home/pi/wifi2wifi/gpio_display_status.py > /dev/null&
 ```
@@ -195,7 +195,7 @@ Note: the displays I got turned on but I didn't get any text.  On the back is a 
 the brightness of the chracters.  If the light is on try adjusting the screw in this pod until you can
 see some darkness where each character will appear.
 
-### Step 5: Add in openvpn connection to access your own content
+### Step 6: Add in openvpn connection to access your own content
 You need to generate a openvpn configuration on your openvpn server.  Then you put the .key and .p12
 files in /etc/openvpn/client directory.  You then place your openvpn configuration file in the
 /etc/openvpn directory and make sure the name ends with ".conf".  So my /etc/openvpn/tv_client.conf 
