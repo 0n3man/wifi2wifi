@@ -1,2 +1,2 @@
 #! /bin/bash
-sudo cp -p /home/pi/wpa_supplicant.conf /etc/wpa_supplicant/
+sudo cp -p /home/pi/wifi2wifi/net-configs/wpa_supplicant.conf /etc/wpa_supplicant/
