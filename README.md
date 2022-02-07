@@ -1,4 +1,4 @@
-# wifi-setup
+# wifi 2 wifi router with openvpn client connectivity
 
 This repo is based on https://github.com/davidflanagan/wifi-setup. With
 slight modification to David's code base. I set up a wifi 2 wifi router
