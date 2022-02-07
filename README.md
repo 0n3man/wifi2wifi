@@ -167,7 +167,9 @@ and configure the wifi internet connectivity.
 !!!!
 
 
+### Step 6: Add the flashing light to show progress
 
+!!!
 
 
 ### below is just old stuff
