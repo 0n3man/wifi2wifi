@@ -8,7 +8,7 @@ various media services while traveling, while also allowing the firestick to
 access media stored at my house.  David's project brings up a wireless
 access point and then allows you to configure that interface to provide
 wifi connective to a local network.  As I already have an access point I don't 
-need that part of the original capability.  However I still need a way to get
+need the access point part of the original capability.  However I still need a way to get
 the second interface connected to the local network.  David's code provides a
 web server and wifi configuration commands that enable configuring the second 
 interface.
