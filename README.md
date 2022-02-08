@@ -1,9 +1,11 @@
 # wifi 2 wifi router with openvpn client connectivity
 
-This repo is based on https://github.com/davidflanagan/wifi-setup. With
+The bulk of this effort is based on https://github.com/davidflanagan/wifi-setup.
+I also used https://github.com/the-raspberry-pi-guy/lcd, which I've included here,
+to enable status reporting on an LCD screen. With
 slight modification to David's code base. I set up a wifi 2 wifi router
 with an openvpn client connection to provide access to media stored at my
-house.  This give me the ability to use a firestick configured to access my
+house.  This give me the ability to use a 'stick configured to access my
 various media services while traveling, while also allowing the firestick to
 access media stored at my house.  David's project brings up a wireless
 access point and then allows you to configure that interface to provide
@@ -16,7 +18,7 @@ interface. This is how it works:
 - The wifi2wifi pi is not connected to the local wifi network when it is first
   turned on. It starts by broadcasting its own wifi access point on the
   second wireles interface. This acccess point is used to access the web server on the pi. 
-  The user connects their phone or laptop to the fire_tv_access access point 
+  The user connects their phone or laptop to the wifi2wifi access point 
   and thens using a web browser (not a native app!) to access
   the device at the URL http://172.16.33.1/. The
   user can select their desired wifi network for internet access and enter the password
@@ -85,7 +87,7 @@ ieee80211n=1
 # QoS support required for full speed
 wmm_enabled=1
 # set up secure wifi access point
-ssid=wifi_setup
+ssid=wifi2wifi
 # 1=wpa, 2=wep, 3=both
 auth_algs=1
 wpa=2
@@ -105,7 +107,7 @@ your access point came up.
 $ sudo systemctl unmask hostapd
 $ sudo shutdown -r now
 ```
-Use your phone or laptop to verify you can access the fire_tv_access 
+Use your phone or laptop to verify you can access the wifi2wifi 
 wifi network. This is not a fully functional network at this point so if 
 you have an android phone you'll have to tell it to connect, even though
 the network can't provide internet access.  I don't have an apple phone
