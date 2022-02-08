@@ -28,7 +28,7 @@ try:
         index_status = os.system("ps -efw |grep index.js |grep -v grep")
         # if we're trying to conigure wifi
         if index_status == 0:
-            print( "node index.js running:" + my_ssid + " " + my_pw)
+            #print( "node index.js running:" + my_ssid + " " + my_pw)
             if loop == 0:
                 loop = 1
                 display.lcd_display_string("SSID:" + my_ssid + "                ", 1)
@@ -51,9 +51,15 @@ try:
                 # we can ping our test site 
                 if response == 0:
                     # all is good keep the light off
-                    print("Connected to " + wifi_ssid +  " and can reach outside world, all is good")
-                    display.lcd_display_string("Connected to    ", 1)
-                    display.lcd_display_string(wifi_ssid + "                 ", 2)
+                    if loop == 0:
+                       loop = 1
+                       display.lcd_display_string("SSID:" + my_ssid + "                ", 1)
+                       display.lcd_display_string("PP:" + my_pw + "               ",2)
+                    else:
+                        loop = 0
+                        #print("Connected to " + wifi_ssid +  " and can reach outside world, all is good")
+                        display.lcd_display_string("Connected to    ", 1)
+                        display.lcd_display_string(wifi_ssid + "                 ", 2)
 
                     # then keep the light off because everything is working
                     ledState = 1
@@ -61,7 +67,7 @@ try:
                 else:
                     # connected to outbound wifi but can't ping test site
                     # flip the light every half second
-                    print("Connected to " + wifi_ssid +  " but waiting for outside would connectivity")
+                    #print("Connected to " + wifi_ssid +  " but waiting for outside would connectivity")
                     display.lcd_display_string("Trying internet ", 1)
                     display.lcd_display_string("on " + wifi_ssid + "             ", 2)
                     sleepDelay = 1
@@ -70,7 +76,7 @@ try:
             else:
                 display.lcd_display_string("Connecting to   ", 1)
                 display.lcd_display_string(wifi_ssid + "                ", 2)
-                print("Bring outbound wifi connection up")
+                #print("Bring outbound wifi connection up")
                 sleepDelay = .5
 
 
@@ -85,7 +91,7 @@ try:
 
 except KeyboardInterrupt:
     # If there is a KeyboardInterrupt (when you press ctrl+c), exit the program and cleanup
-    print("Cleaning up!")
+    #print("Cleaning up!")
     display.lcd_clear()
 
 
