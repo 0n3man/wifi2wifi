@@ -5,7 +5,7 @@ I also used https://github.com/the-raspberry-pi-guy/lcd, which I've included her
 to enable status reporting on an LCD screen. With
 slight modification to David's code base. I set up a wifi 2 wifi router
 with an openvpn client connection to provide access to media stored at my
-house.  This give me the ability to use a 'stick configured to access my
+house.  This give me the ability to use a firestick configured to access my
 various media services while traveling, while also allowing the firestick to
 access media stored at my house.  David's project brings up a wireless
 access point and then allows you to configure that interface to provide
